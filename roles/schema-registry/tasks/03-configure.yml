@@ -1,0 +1,13 @@
+- name: Configuring Schema Registry
+  template:
+    src: sr_config/schema-registry.j2
+    dest: /opt/confluent/schema-registry/etc/schema-registry/schema-registry.properties
+    owner: schema-registry
+    backup: yes
+    force: yes
+  register: sr_config
+  notify: Restart schema-registry
+
+- name: Forcing the handlers
+  meta: flush_handlers
+  when: sr_config|changed or zk_unit|changed

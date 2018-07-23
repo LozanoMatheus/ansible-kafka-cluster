@@ -1,0 +1,35 @@
+- name: Checking Schema Registry previous installation
+  file:
+    path: /opt/confluent/zookeeper
+  register: sr_installed
+  ignore_errors: True
+
+- import_tasks: 01a-prereqs.yml
+  when: sr_installed.msg != "src and dest are required for creating links"
+
+- import_tasks: 01b-prereqs.yml
+  when: sr_installed.msg == "src and dest are required for creating links"
+
+- name: Checking Java previous installation
+  shell: /usr/bin/java -version > /dev/null 2>&1 && echo "Installed" || echo "Not_Installed"
+  register: check_java
+  changed_when: False
+
+- name: Java not found
+  fail:
+    msg: "Java not found. Please, install Java !"
+  when: check_java.stdout == "Not_Installed"
+
+- name: Appling the limits nproc
+  pam_limits:
+    domain: schema-registry
+    limit_type: '-'
+    limit_item: nproc
+    value: 65535
+
+- name: Appling the limits nofile
+  pam_limits:
+    domain: schema-registry
+    limit_type: '-'
+    limit_item: nofile
+    value: 65535

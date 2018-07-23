@@ -1,0 +1,13 @@
+- name: Creating symbolic link to /opt/confluent/schema-registry
+  file:
+    src: /opt/confluent/confluent-4.0.0
+    dest: /opt/confluent/schema-registry
+    owner: schema-registry
+    group: zookeeper
+    state: link
+
+- name: Setting permissions to schema-registry
+  file:
+    path: /opt/confluent/schema-registry/logs
+    mode: "g+w"
+    recurse: yes

@@ -1,0 +1,22 @@
+[Unit]
+Description=Confluent Schema Registry
+After=network.target
+
+[Service]
+Type=forking
+Environment=PIDFILE="/opt/confluent/schema-registry/schema-registry.pid"
+ExecStart=/opt/confluent/schema-registry/bin/schema-registry-start -daemon /opt/confluent/schema-registry/etc/schema-registry/schema-registry.properties
+ExecStop=/opt/confluent/schema-registry/bin/schema-registry-stop
+User=schema-registry
+Group=
+{%- if zk_installed.msg is defined and zk_installed.msg == 'src and dest are required for creating links' %}
+zookeeper
+{% elif zk_installed.msg is defined and zk_installed.msg == 'file (/opt/confluent/zookeeper) is absent, cannot continue' %}
+schema-registry
+{% endif %}
+PIDFILE=/opt/confluent/schema-registry/schema-registry.pid
+Restart=on-failure
+SyslogIdentifier=schema-registry
+
+[Install]
+WantedBy=multi-user.target

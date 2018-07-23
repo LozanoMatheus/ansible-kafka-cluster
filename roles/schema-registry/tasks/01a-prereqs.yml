@@ -1,0 +1,18 @@
+- name: Creating schema-registry group
+  group:
+    name: schema-registry
+    gid: 1520
+    state: present
+    system: yes
+
+- name: Creating schema-registry user
+  user:
+    name: schema-registry
+    comment: "schema-registry User"
+    uid: 1620
+    shell: /usr/sbin/nologin
+    group: schema-registry
+    createhome: no
+    state: present
+    system: yes
+    force: yes

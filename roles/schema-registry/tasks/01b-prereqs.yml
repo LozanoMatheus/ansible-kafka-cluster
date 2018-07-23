@@ -1,0 +1,11 @@
+- name: Creating schema-registry user
+  user:
+    name: schema-registry
+    comment: "schema-registry User"
+    uid: 1620
+    shell: /usr/sbin/nologin
+    group: zookeeper
+    createhome: no
+    state: present
+    system: yes
+    force: yes

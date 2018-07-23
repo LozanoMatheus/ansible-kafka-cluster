@@ -1,0 +1,14 @@
+- name: Transfering the Schema Registry
+  unarchive:
+    src: packages/confluent-oss-4.0.0-2.11.tar.gz
+    dest: /opt/confluent/
+    owner: schema-registry
+    group: schema-registry
+
+- name: Creating symbolic link to /opt/confluent/schema-registry
+  file:
+    src: /opt/confluent/confluent-4.0.0
+    dest: /opt/confluent/schema-registry
+    owner: schema-registry
+    group: schema-registry
+    state: link
