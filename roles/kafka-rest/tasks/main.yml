@@ -1,0 +1,8 @@
+- name: Waiting ssh connection
+  wait_for_connection:
+  
+- import_tasks: 01-prereqs.yml
+
+- import_tasks: 02-install.yml
+
+- import_tasks: 03-configure.yml

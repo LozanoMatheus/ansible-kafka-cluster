@@ -1,0 +1,22 @@
+[Unit]
+Description=Confluent Kafka Rest
+After=network.target
+
+[Service]
+Type=forking
+Environment=PIDFILE="/opt/confluent/kafka-rest/kafka-rest.pid"
+ExecStart=/opt/confluent/kafka-rest/bin/kafka-rest-start -daemon /opt/confluent/kafka-rest/etc/kafka-rest/kafka-rest.properties
+ExecStop=/opt/confluent/kafka-rest/bin/kafka-rest-stop
+User=kafka-rest
+Group=
+{%- if k_installed.msg is defined and k_installed.msg == 'src and dest are required for creating links' %}
+kafka
+{% elif k_installed.msg is defined and k_installed.msg == 'file (/opt/confluent/kafka) is absent, cannot continue' %}
+kafka-rest
+{% endif %}
+PIDFILE=/opt/confluent/kafka-rest/kafka-rest.pid
+Restart=on-failure
+SyslogIdentifier=kafka-rest
+
+[Install]
+WantedBy=multi-user.target

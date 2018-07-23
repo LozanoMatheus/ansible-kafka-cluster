@@ -1,0 +1,6 @@
+- name: Restart kafka-rest
+  systemd:
+    name: kafka-rest
+    state: restarted
+    daemon_reload: yes
+    enabled: True

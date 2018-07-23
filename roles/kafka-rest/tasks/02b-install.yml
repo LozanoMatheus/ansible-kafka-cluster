@@ -1,0 +1,13 @@
+- name: Creating symbolic link to /opt/confluent/kafka-rest
+  file:
+    src: /opt/confluent/confluent-4.0.0
+    dest: /opt/confluent/kafka-rest
+    owner: kafka-rest
+    group: kafka
+    state: link
+
+- name: Setting permissions to kafka-rest
+  file:
+    path: /opt/confluent/kafka-rest/logs
+    mode: "g+w"
+    recurse: yes

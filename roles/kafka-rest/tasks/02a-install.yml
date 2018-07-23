@@ -1,0 +1,14 @@
+- name: Trasfering the Kafka Rest
+  unarchive:
+    src: packages/confluent-oss-4.0.0-2.11.tar.gz
+    dest: /opt/confluent/
+    owner: kafka-rest
+    group: kafka-rest
+
+- name: Creating symbolic link to /opt/confluent/kafka-rest
+  file:
+    src: /opt/confluent/confluent-4.0.0
+    dest: /opt/confluent/kafka-rest
+    owner: kafka-rest
+    group: kafka-rest
+    state: link

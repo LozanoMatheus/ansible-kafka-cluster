@@ -1,0 +1,11 @@
+- name: Creating kafka-rest user
+  user:
+    name: kafka-rest
+    comment: "kafka-rest User"
+    uid: 1640
+    shell: /usr/sbin/nologin
+    group: kafka
+    createhome: no
+    state: present
+    system: yes
+    force: yes

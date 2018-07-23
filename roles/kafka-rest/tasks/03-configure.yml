@@ -1,0 +1,13 @@
+- name: Configuring Kafka Rest
+  template:
+    src: kr_config/kafka-rest.j2
+    dest: /opt/confluent/kafka-rest/etc/kafka-rest/kafka-rest.properties
+    owner: kafka-rest
+    backup: yes
+    force: yes
+  register: kr_config
+  notify: Restart kafka-rest
+
+- name: Forcing the handlers
+  meta: flush_handlers
+  when: kr_config|changed or kr_unit|changed

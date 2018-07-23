@@ -1,0 +1,27 @@
+- import_tasks: 02a-install.yml
+  when: k_installed.msg != "src and dest are required for creating links"
+
+- import_tasks: 02b-install.yml
+  when: k_installed.msg == "src and dest are required for creating links"
+
+- name: Creating systemd-unit to kafka-rest
+  template:
+    src: systemd/kafka-rest.j2
+    dest: /usr/lib/systemd/system/kafka-rest.service
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+    force: yes
+  register: kr_unit
+  notify: Restart kafka-rest
+
+- name: Creating symbolic link to systemd-unit
+  file:
+    src: /usr/lib/systemd/system/kafka-rest.service
+    dest: /etc/systemd/system/multi-user.target.wants/kafka-rest.service
+    owner: root
+    group: root
+    state: link
+  notify: Restart kafka-rest
+  when: kr_unit|changed

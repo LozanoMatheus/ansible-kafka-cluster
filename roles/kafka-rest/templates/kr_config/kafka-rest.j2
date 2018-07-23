@@ -1,0 +1,51 @@
+##
+# Copyright 2015 Confluent Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+##
+
+{% for url in groups['kafka-rest'] %}
+{%- if url == ansible_fqdn or url in ansible_all_ipv4_addresses
+    or ( kafka_id is defined and loop.index0 == kafka_id | int ) -%}
+  id=ps-data-platform-rest{{loop.index0}}
+{% endif %}
+{% endfor %}
+listeners=http://{{ hostvars[inventory_hostname]['ansible_eth0']['ipv4']['address'] }}:8082
+
+schema.registry.url={% for host in groups['schema-registry'] -%}
+http://{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}:8081
+{%- if not loop.last %}
+,
+{%- endif %}
+{%- endfor %}
+
+zookeeper.connect={% for host in groups['zookeeper'] -%}
+{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}:2181
+{%- if not loop.last %}
+,
+{%- endif %}
+{%- endfor %}
+
+bootstrap.servers={% for host in groups['kafka'] -%}
+PLAINTEXT://{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}:9092
+{%- if not loop.last %}
+,
+{%- endif %}
+{%- endfor %}
+
+client.security.protocol=PLAINTEXT
+#
+# Configure interceptor classes for sending consumer and producer metrics to Confluent Control Center
+# Make sure that monitoring-interceptors-<version>.jar is on the Java class path
+#consumer.interceptor.classes=io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor
+#producer.interceptor.classes=io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor
