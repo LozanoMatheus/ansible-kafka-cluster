@@ -1,0 +1,42 @@
+- name: Creating zookeeper group
+  group:
+    name: zookeeper
+    gid: 1510
+    state: present
+    system: yes
+
+- name: Creating zookeeper user
+  user:
+    name: zookeeper
+    comment: "ZooKeeper User"
+    uid: 1610
+    shell: /usr/sbin/nologin
+    group: zookeeper
+    createhome: no
+    state: present
+    system: yes
+    force: yes
+
+- name: Checking Java previous installation
+  shell: /usr/bin/java -version > /dev/null 2>&1 && echo "Installed" || echo "Not_Installed"
+  register: check_java
+  changed_when: False
+
+- name: Java not found
+  fail:
+    msg: "Java not found. Please, install Java !"
+  when: check_java.stdout == "Not_Installed"
+
+- name: Appling limits nproc
+  pam_limits:
+    domain: zookeeper
+    limit_type: '-'
+    limit_item: nproc
+    value: 65535
+
+- name: Appling limits nofile
+  pam_limits:
+    domain: zookeeper
+    limit_type: '-'
+    limit_item: nofile
+    value: 65535

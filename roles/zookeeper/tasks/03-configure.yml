@@ -1,0 +1,62 @@
+- name: Setup Xms e Xmx to ZooKeeper
+  template:
+    src: zk_config/zookeeper-server-start.j2
+    dest: /opt/confluent/zookeeper/bin/zookeeper-server-start
+    owner: zookeeper
+    group: zookeeper
+    mode: 0544
+    backup: yes
+    force: yes
+  register: zk_bin
+  notify: Restart zookeeper
+
+- name: Configuring Zookeeper
+  template:
+    src: zk_config/zookeeper.j2
+    dest: /opt/confluent/zookeeper/etc/kafka/zookeeper.properties
+    owner: zookeeper
+    group: zookeeper
+    mode: 0644
+    backup: yes
+    force: yes
+  register: zk_config
+  notify: Restart zookeeper
+
+- name: Getting the myid
+  shell: grep dataDir /opt/confluent/zookeeper/etc/kafka/zookeeper.properties | awk -F'/' '{print $6}'
+  register: myid
+  changed_when: False
+  when: zk_config|changed
+
+- name: Creating data directory
+  file:
+    path: /opt/confluent/zookeeper/data/{{ myid.stdout }}
+    owner: zookeeper
+    group: zookeeper
+    state: directory
+    mode: 0744
+    recurse: yes
+  when: zk_config|changed
+
+- name: Creating myid file
+  file:
+    path: /opt/confluent/zookeeper/data/{{ myid.stdout }}/myid
+    owner: zookeeper
+    group: zookeeper
+    state: touch
+    mode: 0644
+  when: zk_config|changed
+
+- name: Inserting myid value
+  lineinfile:
+    path: /opt/confluent/zookeeper/data/{{ myid.stdout }}/myid
+    regexp: '^'
+    line: '{{ myid.stdout }}'
+    owner: zookeeper
+    group: zookeeper
+    mode: 0644
+  when: zk_config|changed
+
+- name: Forcing the handlers
+  meta: flush_handlers
+  when: zk_config|changed or zk_unit|changed or k_bin|changed

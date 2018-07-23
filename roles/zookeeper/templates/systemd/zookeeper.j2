@@ -1,0 +1,17 @@
+[Unit]
+Description=Apache Zookeeper
+After=network.target
+
+[Service]
+Type=forking
+Environment=PIDFILE="/opt/confluent/zookeeper/zookeeper_server.pid"
+ExecStart=/opt/confluent/zookeeper/bin/zookeeper-server-start -daemon /opt/confluent/zookeeper/etc/kafka/zookeeper.properties
+ExecStop=/opt/confluent/zookeeper/bin/zookeeper-server-stop
+User=zookeeper
+Group=zookeeper
+PIDFILE=/opt/confluent/zookeeper/zookeeper_server.pid
+Restart=on-failure
+SyslogIdentifier=zookeeper
+
+[Install]
+WantedBy=multi-user.target

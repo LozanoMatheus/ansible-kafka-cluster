@@ -1,0 +1,15 @@
+tickTime=2000
+initLimit=10
+syncLimit=5
+{% for url in groups['zookeeper'] %}
+{%- if url == ansible_fqdn or url in ansible_all_ipv4_addresses
+    or ( kafka_id is defined and loop.index0 == kafka_id | int ) -%}
+  dataDir=/opt/confluent/zookeeper/data/{{loop.index0}}
+{% endif %}
+{% endfor %}
+dataLogDir=/opt/confluent/zookeeper/data/log
+clientPort=2181
+{% for host in groups['zookeeper'] %}
+server.{{loop.index0}}={{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}:2888:3888
+{% endfor %}
+maxClientCnxns=60

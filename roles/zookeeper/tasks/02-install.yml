@@ -1,0 +1,43 @@
+- name: Checking ZooKeeper previous installation
+  file:
+    path: /opt/confluent/confluent-4.0.0
+  register: zk_exists
+  ignore_errors: True
+
+- name: Transfering the Zookeeper
+  unarchive:
+    src: packages/confluent-oss-4.0.0-2.11.tar.gz
+    dest: /opt/confluent/
+    owner: zookeeper
+    group: zookeeper
+  when: zk_exists.state != "directory"
+
+- name: Creating symbolic link to /opt/confluent/zookeeper
+  file:
+    src: /opt/confluent/confluent-4.0.0
+    dest: /opt/confluent/zookeeper
+    owner: zookeeper
+    group: zookeeper
+    state: link
+
+- name: Creating systemd-unit to ZooKeeper
+  template:
+    src: systemd/zookeeper.j2
+    dest: /usr/lib/systemd/system/zookeeper.service
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+    force: yes
+  register: zk_unit
+  notify: Restart zookeeper
+
+- name: Creating symbolic link to systemd-unit
+  file:
+    src: /usr/lib/systemd/system/zookeeper.service
+    dest: /etc/systemd/system/multi-user.target.wants/zookeeper.service
+    owner: root
+    group: root
+    state: link
+  notify: Restart zookeeper
+  when: zk_unit|changed
