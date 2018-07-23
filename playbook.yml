@@ -1,0 +1,66 @@
+- name: Prepering the SO
+  hosts: all_servers
+  gather_facts: false
+  tasks:
+  - setup:
+    when: what_exec != 'all'
+      and what_exec != 'prepare_os'
+    register: setup_executed
+  roles:
+  - { role: prepare_os, when: ( what_exec == 'prepare_os'
+      or what_exec == 'all' ) }
+
+- name: Installing and Configuring ZooKeeper Servers
+  hosts: zookeeper
+  gather_facts: false
+  tasks:
+  - setup:
+    when: what_exec != 'all_servers'
+      and what_exec != 'all' and setup_executed|skipped
+  roles:
+  - { role: zookeeper, when: ( what_exec == 'zookeeper'
+      or what_exec == 'all' ) }
+
+- name: Installing and Configuring Kafka Servers
+  hosts: kafka
+  gather_facts: false
+  tasks:
+  - setup:
+    when: what_exec != 'all_servers'
+      and what_exec != 'all' and setup_executed|skipped
+  roles:
+  - { role: kafka, when: ( what_exec == 'kafka'
+      or what_exec == 'all' ) }
+
+- name: Installing and Configuring Schema Registry
+  hosts: schema-registry
+  gather_facts: false
+  tasks:
+  - setup:
+    when: what_exec != 'all_servers'
+      and what_exec != 'all' and setup_executed|skipped
+  roles:
+  - { role: schema-registry, when: ( what_exec == 'schema-registry'
+      or what_exec == 'all' ) }
+
+- name: Installing and Configuring Kafka Rest
+  hosts: kafka-rest
+  gather_facts: false
+  tasks:
+  - setup:
+    when: what_exec != 'all_servers'
+      and what_exec != 'all' and setup_executed|skipped
+  roles:
+  - { role: kafka-rest, when: ( what_exec == 'kafka-rest'
+      or what_exec == 'all' ) }
+
+- name: Installing and Configuring Kafka Manager
+  hosts: kafka-manager
+  gather_facts: false
+  tasks:
+  - setup:
+    when: what_exec != 'all_servers'
+      and what_exec != 'all' and setup_executed|skipped
+  roles:
+  - { role: kafka-manager, when: ( what_exec == 'kafka-manager'
+      or what_exec == 'all' ) }
