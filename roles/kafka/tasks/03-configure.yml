@@ -1,0 +1,27 @@
+- name: Setup Xms and Xmx to Kafka
+  template:
+    src: kafka/kafka-server-start.j2
+    dest: /opt/confluent/kafka/bin/kafka-server-start
+    owner: kafka
+    group: kafka
+    mode: 0544
+    backup: yes
+    force: yes
+  register: k_bin
+  notify: Restart kafka
+
+- name: Configuring Kafka
+  template:
+    src: kafka/server.j2
+    dest: /opt/confluent/kafka/etc/kafka/server.properties
+    owner: kafka
+    group: kafka
+    mode: 0644
+    backup: yes
+    force: yes
+  register: k_config
+  notify: Reiniciando kafka
+
+- name: Forcing the handlers
+  meta: flush_handlers
+  when: k_config|changed or k_unit|changed or k_bin|changed

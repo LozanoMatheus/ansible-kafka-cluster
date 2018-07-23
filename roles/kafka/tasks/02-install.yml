@@ -1,0 +1,33 @@
+- name: Checking Kafka previous installation
+  file:
+    path: /opt/confluent/confluent-4.0.0
+  register: k_exists
+  ignore_errors: True
+
+- name: Tranfering the Kafka
+  unarchive:
+    src: packages/confluent-oss-4.0.0-2.11.tar.gz
+    dest: /opt/confluent/
+    owner: kafka
+    group: kafka
+  when: k_exists.state != "directory"
+
+- name: Creating symbolic link to /opt/confluent/kafka
+  file:
+    src: /opt/confluent/confluent-4.0.0
+    dest: /opt/confluent/kafka
+    owner: kafka
+    group: kafka
+    state: link
+
+- name: Creating systemd-unit to Kafka
+  template:
+    src: systemd/kafka.j2
+    dest: /usr/lib/systemd/system/kafka.service
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+    force: yes
+  register: k_unit
+  notify: Restart kafka

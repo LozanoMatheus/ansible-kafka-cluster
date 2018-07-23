@@ -1,0 +1,16 @@
+[Unit]
+Description=Confluent Kafka
+After=network.target
+
+[Service]
+Type=forking
+Environment=JMX_PORT=3999
+ExecStart=/opt/confluent/kafka/bin/kafka-server-start -daemon /opt/confluent/kafka/etc/kafka/server.properties
+ExecStop=/opt/confluent/kafka/bin/kafka-server-stop
+User=kafka
+Group=kafka
+Restart=on-failure
+SyslogIdentifier=kafka
+
+[Install]
+WantedBy=multi-user.target

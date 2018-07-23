@@ -1,0 +1,42 @@
+- name: Creating kafka group
+  group:
+    name: kafka
+    gid: 1530
+    state: present
+    system: yes
+
+- name: Creating kafka user
+  user:
+    name: kafka
+    comment: "Kafka User"
+    uid: 1630
+    shell: /usr/sbin/nologin
+    group: kafka
+    createhome: no
+    state: present
+    system: yes
+    force: yes
+
+- name: Checking Java previous installation
+  shell: /usr/bin/java -version > /dev/null 2>&1 && echo "Installed" || echo "Not_Installed"
+  register: check_java
+  changed_when: False
+
+- name: Java is not installed
+  fail:
+    msg: "Java not found. Please, install Java. !"
+  when: check_java.stdout == "Not_Installed"
+
+- name: Appling the limits nproc
+  pam_limits:
+    domain: kafka
+    limit_type: '-'
+    limit_item: nproc
+    value: 65535
+
+- name: Appling the limits nofile
+  pam_limits:
+    domain: kafka
+    limit_type: '-'
+    limit_item: nofile
+    value: 65535
