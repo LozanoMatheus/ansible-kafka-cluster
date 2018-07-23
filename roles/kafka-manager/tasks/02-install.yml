@@ -1,0 +1,42 @@
+- name: Checking kafka-manager previous installation
+  file:
+    path: /opt/confluent/kafka-manager-1.3.3.16
+  register: km_exists
+  ignore_errors: True
+
+- name: Transfering kafka-manager
+  unarchive:
+    src: packages/kafka-manager-1.3.3.16.tar.gz
+    dest: /opt/confluent/
+    owner: kafka-manager
+    group: kafka-manager
+  when: km_exists.state != "directory"
+
+- name: Creating symbolic link to /opt/confluent/kafka-manager
+  file:
+    src: /opt/confluent/kafka-manager-1.3.3.16
+    dest: /opt/confluent/kafka-manager
+    owner: kafka-manager
+    group: kafka-manager
+    state: link
+
+- name: Creating systemd-unit to kafka-manager
+  template:
+    src: systemd/kafka-manager.j2
+    dest: /usr/lib/systemd/system/kafka-manager.service
+    owner: root
+    group: root
+    mode: 0644
+    force: yes
+  register: km_unit
+  notify: Restart kafka-manager
+
+- name: Creating symbolic link to systemd-unit
+  file:
+    src: /usr/lib/systemd/system/kafka-manager.service
+    dest: /etc/systemd/system/multi-user.target.wants/kafka-manager.service
+    owner: root
+    group: root
+    state: link
+  notify: Restart kafka-manager
+  when: km_unit|changed

@@ -1,0 +1,42 @@
+- name: Creating kafka-manager group
+  group:
+    name: kafka-manager
+    gid: 1550
+    state: present
+    system: yes
+
+- name: Creating kafka-manager user
+  user:
+    name: kafka-manager
+    comment: "kafka-manager User"
+    uid: 1650
+    shell: /usr/sbin/nologin
+    group: kafka-manager
+    createhome: no
+    state: present
+    system: yes
+    force: yes
+
+- name: Checking Java previous installation
+  shell: /usr/bin/java -version > /dev/null 2>&1 && echo "Installed" || echo "Not_Installed"
+  register: check_java
+  changed_when: False
+
+- name: Java not found
+  fail:
+    msg: "Java not found. Please, install Java !"
+  when: check_java.stdout == "Not_Installed"
+
+- name: Appling limits nproc
+  pam_limits:
+    domain: kafka-manager
+    limit_type: '-'
+    limit_item: nproc
+    value: 65535
+
+- name: Appling limits nofile
+  pam_limits:
+    domain: kafka-manager
+    limit_type: '-'
+    limit_item: nofile
+    value: 65535

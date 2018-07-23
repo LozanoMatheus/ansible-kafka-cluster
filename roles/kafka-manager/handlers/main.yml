@@ -1,0 +1,6 @@
+- name: Restart kafka-manager
+  systemd:
+    name: kafka-manager
+    state: restarted
+    daemon_reload: yes
+    enabled: True

@@ -1,0 +1,26 @@
+- name: Configuring kafka-manager
+  template:
+    src: km_config/kafka-manager.j2
+    dest: /opt/confluent/kafka-manager/conf/application.conf
+    owner: kafka-manager
+    backup: yes
+    force: yes
+  register: km_config
+  notify: Restart kafka-manager
+
+- name: Forcing the handlers
+  meta: flush_handlers
+  when: km_config|changed or km_unit|changed or km_socket|changed
+
+- name: Prepering POST to configure Cluster
+  set_fact:
+    kafka_cluster_post_data: "{{ kafka_cluster_post_data | default('') }}&{{ item }}={{ kafka_cluster_config[item] }}"
+  with_items: "{{ kafka_cluster_config }}"
+
+- name: Adding the cluster {{ kafka_cluster_config.name }} in the Kafka Manager
+  uri:
+    url: "http://{{ ansible_eth0.ipv4.address }}/clusters"
+    method: POST
+    body: "{{ kafka_cluster_post_data }}"
+    status_code: 200
+  run_once: true
