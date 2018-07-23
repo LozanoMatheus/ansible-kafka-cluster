@@ -1,0 +1,34 @@
+- name: Creating base path to Installation
+  file: 
+    path: /opt/confluent
+    state: directory
+
+- name: Checking previous Java installation
+  shell: /usr/bin/java -version > /dev/null 2>&1 && echo "Installed" || echo "Not_Installed"
+  register: check_java
+  changed_when: False
+
+- name: Installing the Java-JRE
+  unarchive:
+    src: packages/jre-8u152-linux-x64.tar.gz
+    dest: /opt/confluent/
+    owner: root
+    group: root
+  when: check_java.stdout == "Not_Installed"
+
+- name: Creating symbolic link to /opt/confluent/java
+  file:
+    src: /opt/confluent/jre1.8.0_152
+    dest: /opt/confluent/jre
+    owner: root
+    group: root
+    state: link
+  when: check_java.stdout == "Not_Installed"
+
+- name: Setuping linux alternatives
+  alternatives:
+    name: java
+    path: /opt/confluent/jre/bin/java
+    link: /usr/bin/java
+    priority: -10
+  when: check_java.stdout == "Not_Installed"

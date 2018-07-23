@@ -1,0 +1,9 @@
+- name: Restart chrony
+  systemd:
+    name: chronyd
+    state: restarted
+    daemon_reload: yes
+    enabled: True
+
+- name: Update grub
+  shell: /sbin/grub2-mkconfig -o /boot/grub2/grub.cfg

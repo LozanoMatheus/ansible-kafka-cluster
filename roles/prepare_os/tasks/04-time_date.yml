@@ -1,0 +1,46 @@
+- name: Configuring o timezone
+  timezone:
+    name: America/Sao_Paulo
+
+- name: Removing old Chrony instalation
+  yum:
+    name: chrony
+    state: absent
+
+- name: Installing the Chrony
+  yum:
+    name: chrony
+    state: latest
+
+- name: Configuring Chrony
+  template:
+    src: chrony.j2
+    dest: /etc/chrony.conf
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+    backup: yes
+  register: chrony_return
+  notify: 
+   - Restarting chrony
+
+- name: Forcing the handlers
+  meta: flush_handlers
+  when: chrony_return.changed
+
+- name: Stoping the ntpd/ntpdate services
+  systemd: name={{ item }} state=stopped enabled=No
+  with_items:
+    - ntpd
+    - ntpdate
+  ignore_errors: True
+  
+- name: Appling/forcing Chrony configurations
+  shell: "{{ item }}"
+  with_items:
+    - timedatectl set-ntp 1
+    - chronyc -a 'burst 4/4'
+    - chronyc -a makestep
+  when: chrony_return.changed
+  notify:
+   - Restarting chrony

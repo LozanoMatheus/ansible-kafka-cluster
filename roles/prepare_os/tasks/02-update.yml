@@ -1,0 +1,44 @@
+- name: Setup the proxy in YUM Config file
+  template:
+    src: yum.j2
+    dest: /etc/yum.conf
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+    backup: yes
+
+- name: Installing base packages
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+  - selinux-policy
+  - libselinux-python
+  - yum-utils
+
+- name: Updating all packages
+  yum:
+    name: "*"
+    state: latest
+
+- name: Checking Kernel changes.
+  shell: LAST_KERNEL=$(rpm -q --last kernel | awk 'NR==1{sub(/kernel-/,""); print $1}'); CURRENT_KERNEL=$(uname -r); if [ $LAST_KERNEL != $CURRENT_KERNEL ]; then echo 'reboot'; else echo 'no'; fi
+  register: reboot_hint
+  changed_when: 'reboot_hint.stdout.find("reboot") != -1'
+
+- name: Rebooting
+  shell: systemd-run --on-active=3 --timer-property=AccuracySec=100ms /usr/sbin/reboot
+  async: 0
+  poll: 0
+  become: true
+  ignore_errors: true
+  when: reboot_hint.stdout.find("reboot") != -1 or grub_updated|changed or selinux_disabled|changed
+  register: rebooting
+
+- name: Waiting ssh connection
+  wait_for_connection:
+    delay: 15
+    sleep: 1
+    timeout: 600
+
+- setup:

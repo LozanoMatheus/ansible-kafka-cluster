@@ -1,0 +1,23 @@
+- name: Waiting ssh connection
+  wait_for_connection:
+
+- setup:
+  register: setup_executed
+
+- name: Checking Kafka previous installation
+  file:
+    path: /opt/confluent/confluent-4.0.0
+  register: prepare_os_check_kafka
+  ignore_errors: True
+  when: inventory_hostname in groups['kafka']
+
+- import_tasks: 01-tuning.yml
+
+- import_tasks: 02-update.yml
+
+- import_tasks: 03-filesystem.yml
+  when: inventory_hostname in groups['kafka'] and prepare_os_check_kafka.state != "directory"
+
+- import_tasks: 04-time_date.yml
+
+- import_tasks: 05-java.yml

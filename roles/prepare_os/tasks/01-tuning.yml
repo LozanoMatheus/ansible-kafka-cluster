@@ -1,0 +1,39 @@
+- name: Disabling o SELinux
+  selinux:
+    state: disabled
+  register: selinux_disabled
+
+- name: Setup the sysctl parameters
+  sysctl:
+    name: "{{ item.parameter }}"
+    value: "{{ item.value }}"
+    reload: yes
+  with_items:
+    - { parameter: 'net.core.rmem_max', value: '536870912' }
+    - { parameter: 'net.core.wmem_max', value: '536870912' }
+    - { parameter: 'net.ipv4.tcp_window_scaling', value: '1' }
+    - { parameter: 'net.ipv4.tcp_rmem', value: '4096 52428800 536870912' }
+    - { parameter: 'net.ipv4.tcp_wmem', value: '4096 52428800 536870912' }
+    - { parameter: 'net.ipv4.tcp_congestion_control', value: 'vegas' }
+    - { parameter: 'net.ipv4.tcp_mtu_probing', value: '1' }
+    - { parameter: 'net.core.default_qdisc', value: 'fq_codel' }
+    - { parameter: 'net.ipv4.tcp_timestamps', value: '0' }
+    - { parameter: 'net.ipv4.tcp_sack', value: '1' }
+    - { parameter: 'net.ipv4.tcp_no_metrics_save', value: '1' }
+    - { parameter: 'net.core.netdev_max_backlog', value: '2500' }
+
+- name: Disabling o ipv6
+  template:
+    src: grub.j2
+    dest: /etc/default/grub
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+    force: yes
+  register: grub_updated
+  notify: Update grub
+
+- name: Forcing the handlers
+  meta: flush_handlers
+  when: grub_updated|changed

@@ -1,0 +1,29 @@
+- name: Installing lvm2
+  yum:
+    name: lvm2
+    state: latest
+
+- name: Creating VG to Kafka
+  lvg:
+    vg: kafkavg
+    pvs: /dev/xvdb
+    state: present
+
+- name: Creating LV to Kafka
+  lvol:
+    vg: kafkavg
+    lv: kafkalv
+    size: 100%FREE
+
+- name: Creating Filesystem to Kafka
+  filesystem:
+    fstype: xfs
+    dev: /dev/kafkavg/kafkalv
+
+- name: Mounting the Filesystem Kafka
+  mount:
+    path: /opt/confluent
+    src: /dev/kafkavg/kafkalv
+    fstype: xfs
+    opts: rw
+    state: mounted
